@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Button, Text, View, FlatList, ScrollView } from 'react-native';
+import { StyleSheet, Button, Text, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { Card } from 'native-base';
 
 export default class App extends React.Component {
@@ -7,9 +7,10 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       emails: [],
-      openEmail: {}
+      openEmailData: {},
+      openEmail: false,
+      emailOffset: 0
     };
-    //this.fetchEmails = this.fetchEmails.bind(this);
   }
 
   componentWillMount(){
@@ -23,25 +24,84 @@ export default class App extends React.Component {
   }
   openEmail(openEmailData) {
     this.setState({
-      openEmail: openEmailData 
+      openEmailData: openEmailData,
+      openEmail: true
     }); 
+  }
+
+  closeEmail() {
+    this.setState({
+      openEmailData: {},
+      openEmail: false   
+    }); 
+  }
+
+  loadEmails(loadMore) {
+    let offSet = this.state.emailOffset
+    if(loadMore) {
+      this.setState({emailOffset: this.state.emailOffset + 10});
+      offSet += 10; 
+    } else {
+      if (this.state.emailOffset > 0) {
+        this.setState({emailOffset: this.state.emailOffset - 10});
+        offSet -= 10;
+      }
+    }
+    fetch(`http://gsemail.garagescript.org/emails?authUser=drsoper&emailId=drsoper@garagescript.org&offset=${offSet}&count=10`)
+      .then((response)=> {
+        return response.json();
+      })
+      .then((emailResponse)=> {
+        this.setState({emails: emailResponse});
+      }).catch(error=> console.log('error', error));
   }
 
   render() {
     const emailRecipients = this.state.emails.map((email, i)=> {
       return(
-        <Card style={styles.emailContainer} onPress={()=> this.openEmail(email)} key={i}>
+        <TouchableOpacity onPress={()=> this.openEmail(email)} key={i}>
+        <Card style={styles.emailContainer} key={i}>
           <Text>
-            {email.recipient}
+            {email.sender}
+          </Text>
+          <Text style={styles.subjectText}>
+            {email.subject}
           </Text>
         </Card>
+      </TouchableOpacity>
       ); 
     });
+
+    if (this.state.openEmail) {
+      return (
+        <ScrollView style={styles.emailDisplayContainer}>
+          <Card style={styles.displayCardContainer}>
+            <Button onPress={()=> this.closeEmail()} title="X"> </Button>
+            <Text style={styles.padding10}>
+              {this.state.openEmailData.subject}
+            </Text>
+            <Text style={styles.displayText}>
+              {this.state.openEmailData.text}
+            </Text>
+          </Card>
+          <Button style={styles.replyBtn} onPress={()=>{}} title="Reply"> </Button>
+        </ScrollView>
+      ); 
+    }
     return (
       <View style={styles.container}>
-        <ScrollView>
-          {emailRecipients}
-        </ScrollView>
+        <Text style={styles.welcomeText}>
+          Welcome to Your Email Experience
+        </Text>
+        <View style={styles.loadBtns}>
+          <Button style={styles.btnStyle} title="<" onPress={()=> this.loadEmails()}> <Text> HI </Text></Button>
+          <Button title=">" onPress={()=> this.loadEmails('loadMore')}> </Button>
+        </View>
+        <View style={styles.scrollStyle}>
+          <ScrollView>
+            {emailRecipients}
+          </ScrollView>
+        </View>
       </View>
     );
   }
@@ -57,6 +117,47 @@ const styles = StyleSheet.create({
   },
   emailContainer: {
     flex: 1,
+  },
+  subjectText: {
+    padding: 10 
+  },
+  scrollStyle: {
+    flexDirection: 'row' 
+  },
+  welcomeText: {
+    marginTop: 10,
+    alignSelf: 'center',
+    fontSize: 16,
+    color: 'pink',
+  },
+  emailDisplayContainer: {
+    flex: 1,
+    padding: 30, 
+    backgroundColor: 'pink',
+  },
+  displayCardContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+    padding: 15,
+    minHeight: '90%'
+  },
+  padding10: {
+    padding: 10,
+  },
+  displayText: {
+    padding: 10, 
+    paddingLeft: 20
+  },
+  loadBtns: {
+    width: '100%',
+    backgroundColor: 'red',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  btnStyle: {
+    fontSize: 18 
+  },
+  replyBtn: {
   }
 
 });
