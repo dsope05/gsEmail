@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
     padding: 10 
   },
   scrollStyle: {
+    paddingBottom: 60,
     flexDirection: 'row' 
   },
   welcomeText: {
