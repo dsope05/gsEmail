@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Button, Text, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { Card } from 'native-base';
+import Login from './components/login';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -9,19 +10,20 @@ export default class App extends React.Component {
       emails: [],
       openEmailData: {},
       openEmail: false,
-      emailOffset: 0
+      emailOffset: 0,
+      userInfo: {
+        success: false, 
+        email: '',
+        name: '',
+        userName: '',
+      },
+      userName: '',
+      password: '',
+      emailId: '',
+      loader: true
     };
   }
 
-  componentWillMount(){
-    fetch('http://d3.llip.life/emails?authUser=drsoper&emailId=drsoper@garagescript.org&offset=0&count=10')
-      .then((response)=> {
-        return response.json();
-      })
-      .then((emailResponse)=> {
-        this.setState({emails: emailResponse});
-      }).catch(error=> console.log('error', error));
-  }
   openEmail(openEmailData) {
     this.setState({
       openEmailData: openEmailData,
@@ -34,6 +36,41 @@ export default class App extends React.Component {
       openEmailData: {},
       openEmail: false   
     }); 
+  }
+
+  componentWillMount() {
+    const url = 'http://auth.garagescript.org/session'
+    fetch(url, {
+        method: 'GET',
+        credentials: 'include'
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        this.setState({userInfo: json.userInfo});
+          }).catch((err) => {
+                console.log(err);
+          });
+  }
+
+  login() {
+    fetch('http://auth.garagescript.org/signin', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userName: this.state.userName,
+        password: this.state.password 
+      }),
+    }).then((r) => r.json())
+      .then( r => { this.setState({userInfo: r})})
+  }
+
+  loginInput(e, property) {
+    this.setState({
+      [property]: e 
+    });
   }
 
   loadEmails(loadMore) {
@@ -57,6 +94,16 @@ export default class App extends React.Component {
   }
 
   render() {
+    if(this.state.userInfo.success && this.state.loader) {
+      fetch(`http://d3.llip.life/emails?authUser=${this.state.userInfo.userName}&emailId=${this.state.userInfo.email}&offset=0&count=10`)
+        .then((response)=> {
+          return response.json();
+        })
+        .then((emailResponse)=> {
+          this.setState({emails: emailResponse, loader: false});
+        }).catch(error=> console.log('error', error));
+     
+    }
     const emailRecipients = this.state.emails.map((email, i)=> {
       return(
         <TouchableOpacity onPress={()=> this.openEmail(email)} key={i}>
@@ -71,7 +118,11 @@ export default class App extends React.Component {
       </TouchableOpacity>
       ); 
     });
-
+    if (!this.state.userInfo.success) {
+      return (
+        <Login userName={this.state.userInfo.userName} email={this.state.userInfo.email} login={()=> this.login()} usernameInput={(e)=> this.loginInput(e, 'userName')} passwordInput={(e)=> this.loginInput(e, 'password')}/> 
+      ); 
+    }
     if (this.state.openEmail) {
       return (
         <ScrollView style={styles.emailDisplayContainer}>
@@ -111,7 +162,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: 'blue',
+    backgroundColor: '#87CEFA',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
@@ -150,7 +201,6 @@ const styles = StyleSheet.create({
   },
   loadBtns: {
     width: '100%',
-    backgroundColor: 'red',
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
