@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Button, Text, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
-import { Card } from 'native-base';
+import { Card, Container, Header, Footer } from 'native-base';
 import Login from './components/login';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -140,20 +141,26 @@ export default class App extends React.Component {
       ); 
     }
     return (
-      <View style={styles.container}>
+      <Container>
+        <Header style={styles.mainPageHeader}>
         <Text style={styles.welcomeText}>
-          Welcome to Your Email Experience
+          GS Email
         </Text>
-        <View style={styles.loadBtns}>
-          <Button style={styles.btnStyle} title="<" onPress={()=> this.loadEmails()}> <Text> HI </Text></Button>
-          <Button title=">" onPress={()=> this.loadEmails('loadMore')}> </Button>
-        </View>
+        </Header>
+      <View style={styles.container}>
         <View style={styles.scrollStyle}>
           <ScrollView>
             {emailRecipients}
           </ScrollView>
         </View>
       </View>
+      <Footer style={styles.mainPageFooter}>
+        <View style={styles.loadBtns}>
+          <Icon size={30} name="angle-left"  style={styles.btnStyle} title="<" onPress={()=> this.loadEmails()}/>
+          <Icon size={30} name="angle-right" onPress={()=> this.loadEmails('loadMore')}/>
+        </View>
+      </Footer>
+    </Container>
     );
   }
 }
@@ -161,8 +168,9 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: '#87CEFA',
+    paddingTop: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
@@ -173,19 +181,17 @@ const styles = StyleSheet.create({
     padding: 10 
   },
   scrollStyle: {
-    paddingBottom: 60,
     flexDirection: 'row' 
   },
   welcomeText: {
-    marginTop: 10,
+    padding: 10,
     alignSelf: 'center',
     fontSize: 16,
-    color: 'pink',
   },
   emailDisplayContainer: {
     flex: 1,
     padding: 30, 
-    backgroundColor: 'pink',
+    backgroundColor: '#87CEFA',
   },
   displayCardContainer: {
     flex: 1,
@@ -201,14 +207,16 @@ const styles = StyleSheet.create({
     paddingLeft: 20
   },
   loadBtns: {
+    padding: 10,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  btnStyle: {
-    fontSize: 18 
+  mainPageHeader: {
+    backgroundColor: '#87CEFA'
   },
-  replyBtn: {
+  mainPageFooter: {
+    backgroundColor: '#87CEFA'
   }
 
 });
