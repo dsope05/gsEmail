@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, Button, Text, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
-import { Card, Container, Header, Footer } from 'native-base';
+import { Card, Container, Header, Footer, List, ListItem, Left, Body, Right } from 'native-base';
 import Login from './components/login';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import moment from 'moment';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -106,17 +107,27 @@ export default class App extends React.Component {
      
     }
     const emailRecipients = this.state.emails.map((email, i)=> {
+      const date = moment(email.timestamp*1000).fromNow();
+      console.log('emai', email);
       return(
-        <TouchableOpacity onPress={()=> this.openEmail(email)} key={i}>
-        <Card style={styles.emailContainer} key={i}>
-          <Text>
-            {email.sender}
-          </Text>
-          <Text style={styles.subjectText}>
-            {email.subject}
-          </Text>
-        </Card>
-      </TouchableOpacity>
+        <ListItem avatar key={i}>
+          <Left>
+            <Icon name="leaf" size={30}/>
+          </Left>
+          <Body>
+            <TouchableOpacity onPress={()=> this.openEmail(email)}>
+              <Text style={styles.sender}>
+                {email.sender}
+              </Text>
+              <Text style={styles.subjectText}>
+                {email.subject}
+              </Text>
+            </TouchableOpacity>
+          </Body>
+          <Right>
+            <Text note> {date} </Text>
+          </Right>
+        </ListItem>
       ); 
     });
     if (!this.state.userInfo.success) {
@@ -143,24 +154,28 @@ export default class App extends React.Component {
     return (
       <Container>
         <Header style={styles.mainPageHeader}>
-        <Text style={styles.welcomeText}>
-          GS Email
-        </Text>
+          <Text style={styles.welcomeText}>
+            GS Email
+          </Text>
+          <Icon size={20} style={styles.marginLeft} name="envelope-o"/>
         </Header>
-      <View style={styles.container}>
-        <View style={styles.scrollStyle}>
-          <ScrollView>
-            {emailRecipients}
-          </ScrollView>
+        <View style={styles.container}>
+          <View style={styles.scrollStyle}>
+            <ScrollView>
+              <List>
+                {emailRecipients}
+              </List>
+            </ScrollView>
+          </View>
         </View>
-      </View>
-      <Footer style={styles.mainPageFooter}>
-        <View style={styles.loadBtns}>
-          <Icon size={30} name="angle-left"  style={styles.btnStyle} title="<" onPress={()=> this.loadEmails()}/>
-          <Icon size={30} name="angle-right" onPress={()=> this.loadEmails('loadMore')}/>
-        </View>
-      </Footer>
-    </Container>
+        <Footer style={styles.mainPageFooter}>
+          <View style={styles.loadBtns}>
+            <Icon size={30} name="angle-left"  style={styles.btnStyle} title="<" onPress={()=> this.loadEmails()}/>
+            <Icon size={30} color="#006400" name="leaf"/>
+            <Icon size={30} name="angle-right" onPress={()=> this.loadEmails('loadMore')}/>
+          </View>
+        </Footer>
+      </Container>
     );
   }
 }
@@ -183,9 +198,9 @@ const styles = StyleSheet.create({
   scrollStyle: {
     flexDirection: 'row' 
   },
+  headerStyle: {
+  },
   welcomeText: {
-    padding: 10,
-    alignSelf: 'center',
     fontSize: 16,
   },
   emailDisplayContainer: {
@@ -208,15 +223,25 @@ const styles = StyleSheet.create({
   },
   loadBtns: {
     padding: 10,
+    paddingLeft: 30,
+    paddingRight: 30,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
   mainPageHeader: {
+    alignItems: 'center',
     backgroundColor: '#87CEFA'
   },
   mainPageFooter: {
     backgroundColor: '#87CEFA'
+  },
+  marginLeft: {
+    marginLeft: 10 
+  },
+  sender: {
+    fontSize: 16,
+    fontWeight: 'bold',
   }
 
 });
